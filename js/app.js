@@ -7,7 +7,7 @@
 const CONFIG = {
   itemsPerPage: 10,
   liveUpdateInterval: 3000, // 3 Sekunden
-  apiBaseUrl: null // Setze hier deine API URL, wenn verfügbar
+  apiBaseUrl: https://book-of-ramon.grok.me/game-latest // Setze hier deine API URL, wenn verfügbar
 };
 
 // Spieler und Spiele
@@ -84,12 +84,27 @@ function startLiveUpdates() {
   }
 }
 
-function addRandomRecord() {
-  if (!liveUpdatesActive) return;
+async function addRecordFromAPI() {
+  if (!liveUpdatesActive || !CONFIG.apiBaseUrl) return;
 
-  const newRecord = generateGameRecord();
-  allData.unshift(newRecord);
-  applyFilters();
+  try {
+    const response = await fetch(`${CONFIG.apiBaseUrl}`);
+    const newGame = await response.json();
+
+    allData.unshift({
+      timestamp: new Date(newGame.timestamp).toLocaleString('de-DE'),
+      game: newGame.game,
+      bet: newGame.bet,
+      result: newGame.result,
+      profit: newGame.profit,
+      player: newGame.player,
+      date: new Date(newGame.timestamp)
+    });
+
+    applyFilters();
+  } catch (error) {
+    console.error('API Fehler:', error);
+  }
 }
 
 function toggleLiveUpdates() {
